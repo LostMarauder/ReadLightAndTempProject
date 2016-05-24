@@ -1,5 +1,9 @@
-"""This file reads data sent to serial port and writes the data to a text file
-    continuously.
+"""
+ReadLightAndTemp
+
+This file reads data sent to serial port and writes the data to a text file
+continuously.
+
 """
 
 import os.path  # Import path method to direct to data file
@@ -12,11 +16,18 @@ import serial  # Import module to read serial port
 
 import cv2 # Import cv2 for image capture
 
+import sqlite3 # Import sqlite3 for storing data to database
+
+# Declare string variable for controller device file
+device = "/dev/ttyACM0"
+# Declare string variable for path to save file
+savePath = "/home/sdharsee/Projects/ReadLightAndTempProject/Data/"
+
 # Declare object for controller port, with baud rate 9600, and timeout of 9600
-ser = serial.Serial("COM3", 9600, timeout=500)
+ser = serial.Serial(device, 9600, timeout=500)
 
 # Declare path to data file directory
-savePath = "C:/Users/Sameer/Desktop/read_light_and_temp/TestData/" + time.strftime("%Y%m%d-%H%M%S")
+saveFile = savePath + time.strftime("%Y%m%d-%H%M%S")
 
 imageSavePath = savePath + "/Images"    # Declare path to images folder
 
@@ -31,43 +42,69 @@ elif not os.path.exists(imageSavePath):
 saveFile = "LightAndTemp_" + time.strftime("%Y%m%d-%H%M%S")
 
 # Declare path to save file
-dataFilePath = os.path.join(savePath, saveFile + ".txt")
-imageFilePath = os.path.join(savePath, imageSavePath)
+#dataFilePath = os.path.join(savePath, saveFile + ".txt")
+#imageFilePath = os.path.join(savePath, imageSavePath)
 
-# Declare object for file to read and write to
-with open(dataFilePath, mode='w', buffering=0) as dataRecord:
-    # Print header row to data file
-    dataRecord.write("Date-Time" + "\t" + "Light" + "\t" +
-                     "Temp C" + "\t" + "Temp F" + "\n")
+databasePath = 'lightAndTempDatabase.db'
+dataTable = 'lightAndTempDataTable'
+databaseConn = sqlite3.connect(databasePath)
+databaseCursor = databaseConn.cursor()
 
-    cam = cv2.VideoCapture(1)  # Initialize web cam. 1 is the index for the web cam
+# Create data table if it does not exist
+def create_table(data_Table):
+    databaseCursor.execute('CREATE TABLE IF NOT EXISTS ' + data_Table + '(DateAndTime TEXT, Light_Value REAL, Temp_C FLOAT)')
+    
 
-    # Loop to input data
-    while True:
+# Enter data into data table in database
+def data_entry(lightTempDataString, data_Table):
+    executionString = "INSERT INTO " + data_Table + " VALUES("
+    for i, item in enumerate(lightTempDataString[:-1]):
+        item = lightTempDataString[i]
+        executionString += str(item) + ', '
+    executionString += lightTempDataString[-1]
+    executionString += ')'
+    databaseCursor.execute(executionString)
+    ###databaseCursor.execute("INSERT INTO " + data_Table + " VALUES(" + lightTempDataString + ")")
+    databaseConn.commit()
+    
 
-        try:
+###cam = cv2.VideoCapture(1)  # Initialize web cam. 1 is the index for the web cam
 
-            currentDateTime = time.strftime("%Y%m%d-%H%M%S")  # Update currentDate
+create_table(dataTable)
 
-            rate = ser.readline()   # Update value for light reading
-            temperatureC = ser.readline()   # Update value for temperature reading
-            imageName = currentDateTime + ".jpg" # Set image name to be currentDateTime
+# Loop to input data
+while True:
+    try:
+        # Update currentDataPoint
+        currentDataPoint = ser.readline().split()
+        for i, item in enumerate(currentDataPoint):
+            item = currentDataPoint[i].decode(encoding='utf-8')
+            currentDataPoint[i] = item
+        ###currentDataPoint[0], currentDataPoint[1] = currentDataPoint[0].decode(encoding='utf-8'), currentDataPoint[1].decode(encoding='utf-8')
+        
+        #Add DateAndTime to the beginning of the list
+        currentDataPoint.reverse()
+        currentDataPoint.append(time.strftime("%Y%m%d-%H%M%S"))
+        currentDataPoint.reverse()
+        
+        ###rateAndTemp = ser.readline()   # Update value for light reading and temp reading
+            
+        ###imageName = currentDateTime + ".jpg" # Set image name to be currentDateTime
+        
+        # Placed cam variable declaration here before moving
+        
+        ###retval, image = cam.read()  # Read image from camera
+        ###cv2.imwrite(imageSavePath + "/" + imageName, image)     #Save the image
+        
+        ###time.sleep(0.5)  # Delay for 0.5 second(s)
+        
+        # Store data into lightAndTempDatabase
+        data_entry(currentDataPoint, dataTable)
+        
+    except KeyboardInterrupt:
+        break
 
-            # Print current date, time, and data from serial port
-            dataRecord.write(currentDateTime + "\t"
-                             + ser.readline())
-
-            # Placed cam variable declaration here before moving
-
-            retval, image = cam.read()  # Read image from camera
-            cv2.imwrite(imageSavePath + "/" + imageName, image)     #Save the image
-
-
-            time.sleep(0.5)  # Delay for 0.5 second(s)
-            print(currentDateTime + "\t" + temperatureC)
-
-        except KeyboardInterrupt:
-            break
-
-    del(cam)
-    sys.exit()
+###del(cam)
+databaseCursor.close()
+databaseConn.close()
+sys.exit()

@@ -1,0 +1,20 @@
+Connected Particle Photon to VM.
+
+Have particle-cli install on VM, and run command:
+
+particle serial list
+
+Note that this will give the device name of the Photon.
+
+
+Run this command to output the data from serial to the terminal:
+
+sudo particle serial monitor /dev/devXXX
+
+
+The python script will create a new sqlite database and a data table in the database.
+This data table will be updated continuously as long as the script is running. The 
+database file is created and stored in the same directory as the python script.
+
+Image data collection code was commented out. The image collection should be re-enabled
+once they can be stored onto the same database as the light and temperature data.

@@ -1,7 +1,7 @@
 /*
 Reading Temp and LIght
 This program reads an analog signal from an LDR, and sends the output to a text file on the computer.
-CODE WORKS, BUT NEED TO CHECK VALUES FOR TEMP CALCULATION
+CODE WORKS, BUT NEED TO CHECK THAT RECEIVING CORRECT VALUES
 MAYBE SET ANALOG REFERENCE VALUE
 */
 
@@ -47,5 +47,5 @@ void loop()
   Serial.println();
 
   //Wait for 500 miliseconds
-  delay(2000);
+  delay(500);
 }

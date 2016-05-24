@@ -1,7 +1,7 @@
 /*
 Reading Temp and LIght
 This program reads an analog signal from an LDR, and sends the output to a text file on the computer.
-CODE WORKS, BUT NEED TO CHECK THAT RECEIVING CORRECT VALUES
+CODE WORKS, BUT NEED TO FIX TO GET CORRECT VALUES
 MAYBE SET ANALOG REFERENCE VALUE
 */
 
@@ -36,14 +36,11 @@ void loop()
   voltage = voltage / 4095.0;
   //Convert voltage to temperature
   float temperatureC = (voltage - 0.5) * 100;
-  float temperatureF = (temperatureC * 9.0 / 5.0) + 32.0;
-    
+  
   //Output data to serial separated by tabs
   Serial.print(rate);
-  Serial.print("\t");
+  Serial.print(" ");
   Serial.print(temperatureC);
-  Serial.print("\t");
-  Serial.print(temperatureF);
   Serial.println();
 
   //Wait for 500 miliseconds

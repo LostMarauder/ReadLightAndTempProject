@@ -18,25 +18,39 @@ import cv2 # Import cv2 for image capture
 
 import sqlite3 # Import sqlite3 for storing data to database
 
+from configparser import ConfigParser # Import configparser to read config file
+
+import ast # Import ast to read string as dictionary
+
 import serial_device # Import serial_device class
 
+#Read config file to get settings for the device
+cfg = ConfigParser()
+cfg.read('readDataConf.ini')
+
 # Declare string variable for controller device file
-device = "/dev/ttyACM0"
+###device = "/dev/ttyACM0"
+device = cfg.get('device_1', 'device')
 
 # Declare device name
-name = "photonTest"
+###name = "photonTest"
+name = cfg.get('device_1', 'name')
 
 # Declare device location
-location = "HomeDesktop"
+###location = "HomeDesktop"
+location = cfg.get('device_1', 'location')
 
 # Declare data fields as a dictionary [Field name: Field type]
-dataFields = {'DateAndTime' : 'TEXT', 'Light_Value' : 'REAL', 'Temp_C' : 'FLOAT'}
+###dataFields = {'DateAndTime' : 'TEXT', 'Light_Value' : 'REAL', 'Temp_C' : 'FLOAT'}
+dataFieldsString = cfg.get('device_1', 'dataFields')
+dataFields = ast.literal_eval(dataFieldsString)
 
 # Declare string variable for path to save file
 ###savePath = "/home/sdharsee/Projects/ReadLightAndTempProject/Data/"
 
 # Declare object for controller port, with baud rate 9600, and timeout of 9600
-databasePath = 'lightAndTempDatabase.db'
+###databasePath = 'lightAndTempDatabase.db'
+databasePath = cfg.get('device_1', 'databasePath')
 
 # Declare object for controller device
 controller = serial_device.DataDevice(device, name, location, dataFields, databasePath)

@@ -83,8 +83,13 @@ class DataDevice(object):
             for i, item in enumerate(dataList[:-1]):
                 item = dataList[i]
                 executionString += dataList[i] + ', '
-            executionString += dataList[-1] + ")"
-            self.dbCursor.execute(executionString)
+            executionString += dataList[-1] + ");"
+            print("Inserting into table {}".format( executionString ))
+            try:
+                self.dbCursor.execute(executionString)
+                self.dbConn.commit()
+            except sqlite3.Error as e:
+                print ("ERROR: ", e.message)
             
         else:
             print("The number of data attributes being entered does not match the number of columns in the table.")
